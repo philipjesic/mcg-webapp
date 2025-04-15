@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: auth-gateway-mongo-depl
+spec:
+  replicas: 1
+  selector: 
+    matchLabels: 
+      app: auth-gateway-mongo
+  template: 
+    metadata: 
+      labels: 
+        app: auth-gateway-mongo
+    spec:
+      containers:
+        - name: auth-mongo-depl
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-gateway-mongo-srv
+spec:
+  selector:
+    app: auth-gateway-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+

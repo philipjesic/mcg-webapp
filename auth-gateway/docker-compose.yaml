@@ -1,0 +1,26 @@
+services:
+  auth:
+    build: .
+    container_name: auth_gateway_service
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/auth
+      - JWT_SECRET=mysecret 
+    #depends_on:
+    #  mongo:
+    #    condition: service_healthy
+
+  mongo:
+    image: mongo
+    container_name: mongo_db
+    restart: always
+    ports:
+      - "27017:27017"
+    #healthcheck:
+    #  test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+    #  interval: 1m30s
+    #  timeout: 30s
+    #  retries: 5
+    #  start_period: 30s
