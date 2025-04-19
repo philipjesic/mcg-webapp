@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/philipjesic/listings/handlers"
-	storage "github.com/philipjesic/listings/storage/database"
+	"github.com/philipjesic/mcg-webapp/listings/handlers"
+	storage "github.com/philipjesic/mcg-webapp/listings/storage/database"
 )
 
 func RegisterListingHandlers(r *gin.RouterGroup, db storage.DataStore) *gin.RouterGroup {

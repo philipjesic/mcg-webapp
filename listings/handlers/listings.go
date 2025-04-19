@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
-	storage "github.com/philipjesic/listings/storage/database"
+	storage "github.com/philipjesic/mcg-webapp/listings/storage/database"
 )
 
 type Listings struct {
