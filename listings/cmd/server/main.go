@@ -15,8 +15,8 @@ func main() {
 	r := gin.Default()
 
 	// TODO: Fix context objects
-	db := storage.InitMongoClient(context.TODO())
-	routes.RegisterRoutes(r, db)
+	db := storage.InitMongoClient(context.Background())
+	routes.RegisterAPI(r, db)
 
 	port := config.GetEnv("PORT", "3000")
 	r.Run(":" + port)

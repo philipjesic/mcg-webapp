@@ -1,9 +1,11 @@
 package storage
 
+import "context"
+
 type DataStore interface {
-	GetListingByID(id string) (Listing, error)
-	GetListings(ids []string) ([]Listing, error)
-	InsertListing(l Listing) error
+	GetListingByID(ctx context.Context, id string) (Listing, error)
+	GetListings(ctx context.Context, ids []string) ([]Listing, error)
+	InsertListing(ctx context.Context, l Listing) error
 }
 
 type Listing struct {

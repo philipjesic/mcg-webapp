@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -24,10 +25,10 @@ func InitMongoClient(ctx context.Context) *MongoClient {
 		log.Fatal("Could not connect to MongoDB", err)
 	}
 
-	//err = client.Ping(ctx, nil)
-	//if err != nil {
-	//	log.Fatal("Ping call failed to MongoDB", err)
-	//}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.Fatal("Ping call failed to MongoDB", err)
+	}
 
 	// TODO: fix up logging. Maybe create logging server?
 	log.Println("Connected to MongoDB")
@@ -37,17 +38,20 @@ func InitMongoClient(ctx context.Context) *MongoClient {
 	}
 }
 
-func (m *MongoClient) GetListingByID(id string) (Listing, error) {
-	return Listing{}, nil
+func (m *MongoClient) GetListingByID(ctx context.Context, id string) (Listing, error) {
+	collection := m.Mongo.Database("listings").Collection("listings")
+	listing := Listing{}
+	err := collection.FindOne(ctx, bson.D{{Key: "id", Value: id}}).Decode(&listing)
+	return listing, err
 }
 
-func (m *MongoClient) GetListings(ids []string) ([]Listing, error) {
+func (m *MongoClient) GetListings(ctx context.Context, ids []string) ([]Listing, error) {
 	return []Listing{}, nil
 }
 
-func (m *MongoClient) InsertListing(l Listing) error {
+func (m *MongoClient) InsertListing(ctx context.Context, l Listing) error {
 	collection := m.Mongo.Database("listings").Collection("listings")
-	_, err := collection.InsertOne(context.TODO(), l)
+	_, err := collection.InsertOne(ctx, l)
 	if err != nil {
 		// TODO: add logging
 		return errors.New("database error: " + err.Error())

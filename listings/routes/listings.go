@@ -6,7 +6,7 @@ import (
 	storage "github.com/philipjesic/listings/storage/database"
 )
 
-func RegisterListings(r *gin.Engine, db storage.DataStore) *gin.RouterGroup {
+func RegisterListingHandlers(r *gin.RouterGroup, db storage.DataStore) *gin.RouterGroup {
 	handler := handlers.CreateListingsHandler(db)
 
 	api := r.Group("/listings")
