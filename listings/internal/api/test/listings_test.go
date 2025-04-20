@@ -1,4 +1,4 @@
-package handlers
+package test
 
 import (
 	"bytes"
@@ -13,14 +13,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	storage "github.com/philipjesic/mcg-webapp/listings/storage/database"
+	"github.com/philipjesic/mcg-webapp/listings/internal/api/responses"
+	"github.com/philipjesic/mcg-webapp/listings/internal/api/routes"
+	storage "github.com/philipjesic/mcg-webapp/listings/internal/storage/database"
 )
 
 func Test_GetListing_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	handler := CreateListingsHandler(mockDB)
+	routes.RegisterAPI(r, mockDB)
 
 	listing := storage.Listing{
 		ID:          "listing-id-123",
@@ -30,11 +33,8 @@ func Test_GetListing_Success(t *testing.T) {
 
 	mockDB.On("GetListingByID", mock.Anything, "listing-id-123").Return(listing, nil).Once()
 
-	req, _ := http.NewRequest(http.MethodGet, "/listings/listing-id-123", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/api/listings/listing-id-123", nil)
 	rec := httptest.NewRecorder()
-
-	r := gin.Default()
-	r.GET("/listings/:id", handler.Get)
 
 	r.ServeHTTP(rec, req)
 
@@ -44,18 +44,16 @@ func Test_GetListing_Success(t *testing.T) {
 
 func Test_GetListing_DBError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	handler := CreateListingsHandler(mockDB)
+	routes.RegisterAPI(r, mockDB)
 
 	// Simulate DB error
 	mockDB.On("GetListingByID", mock.Anything, "fail-id").Return(storage.Listing{}, errors.New("db failed")).Once()
 
-	req, _ := http.NewRequest(http.MethodGet, "/listings/fail-id", nil)
+	req, _ := http.NewRequest(http.MethodGet, "/api/listings/fail-id", nil)
 	rec := httptest.NewRecorder()
-
-	r := gin.Default()
-	r.GET("/listings/:id", handler.Get)
 
 	r.ServeHTTP(rec, req)
 
@@ -65,9 +63,10 @@ func Test_GetListing_DBError(t *testing.T) {
 
 func Test_CreateListing_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	handler := CreateListingsHandler(mockDB)
+	routes.RegisterAPI(r, mockDB)
 
 	requestBody := `{
 		"data": {
@@ -83,19 +82,16 @@ func Test_CreateListing_Success(t *testing.T) {
 		return l.Title == "Test Title" && l.Description == "Test Description"
 	})).Return(nil).Once()
 
-	req, _ := http.NewRequest(http.MethodPost, "/listings", bytes.NewBufferString(requestBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/listings", bytes.NewBufferString(requestBody))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-
-	r := gin.Default()
-	r.POST("/listings", handler.Create)
 
 	r.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
 	// Parse response JSON
-	var res ListingResponse
+	var res responses.ListingResponse
 	err := json.Unmarshal(rec.Body.Bytes(), &res)
 	assert.NoError(t, err)
 	assert.Len(t, res.Data, 1)
@@ -113,9 +109,10 @@ func Test_CreateListing_Success(t *testing.T) {
 
 func Test_CreateListing_DBError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	handler := CreateListingsHandler(mockDB)
+	routes.RegisterAPI(r, mockDB)
 
 	requestBody := `{
 		"data": {
@@ -127,12 +124,9 @@ func Test_CreateListing_DBError(t *testing.T) {
 	mockDB.On("InsertListing", mock.Anything, mock.AnythingOfType("storage.Listing")).
 		Return(errors.New("simulated insert error")).Once()
 
-	req, _ := http.NewRequest(http.MethodPost, "/listings", bytes.NewBufferString(requestBody))
+	req, _ := http.NewRequest(http.MethodPost, "/api/listings", bytes.NewBufferString(requestBody))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
-
-	r := gin.Default()
-	r.POST("/listings", handler.Create)
 
 	r.ServeHTTP(rec, req)
 
@@ -140,4 +134,29 @@ func Test_CreateListing_DBError(t *testing.T) {
 	assert.Equal(t, "Internal Server Error...", rec.Body.String())
 
 	mockDB.AssertExpectations(t)
+}
+
+func Test_CreateListing_ValidationError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.Default()
+
+	mockDB := new(storage.MockDataStore)
+	routes.RegisterAPI(r, mockDB)
+
+	// Missing title (which is required)
+	// Missing description (which is required)
+	body := []byte(`{
+		"data": {
+		}
+	}`)
+
+	req, _ := http.NewRequest(http.MethodPost, "/api/listings", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	resp := httptest.NewRecorder()
+
+	r.ServeHTTP(resp, req)
+
+	assert.Equal(t, http.StatusBadRequest, resp.Code)
+	assert.Contains(t, resp.Body.String(), "Title")
+	assert.Contains(t, resp.Body.String(), "Description")
 }

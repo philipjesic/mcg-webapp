@@ -7,31 +7,13 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
-	storage "github.com/philipjesic/mcg-webapp/listings/storage/database"
+	"github.com/philipjesic/mcg-webapp/listings/internal/api/requests"
+	"github.com/philipjesic/mcg-webapp/listings/internal/api/responses"
+	storage "github.com/philipjesic/mcg-webapp/listings/internal/storage/database"
 )
 
 type Listings struct {
 	db storage.DataStore
-}
-
-type ListingCreateRequestBody struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-}
-
-type ListingCreateRequest struct {
-	Data ListingCreateRequestBody `json:"data"`
-}
-
-type ListingResponseBody struct {
-	ID          string `json:"id"`
-	Type        string ` json:"type"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-}
-
-type ListingResponse struct {
-	Data []ListingResponseBody `json:"data"`
 }
 
 func CreateListingsHandler(db storage.DataStore) *Listings {
@@ -54,9 +36,12 @@ func (h *Listings) Get(c *gin.Context) {
 
 func (h *Listings) Create(c *gin.Context) {
 	ctx := c.Request.Context()
-	req := ListingCreateRequest{}
+	req := requests.ListingCreateRequest{}
 
-	c.ShouldBindBodyWithJSON(&req)
+	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
+		return
+	}
 
 	listing := storage.Listing{
 		ID:          uuid.New().String(),
@@ -75,18 +60,18 @@ func (h *Listings) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, res)
 }
 
-func createListingResponse(listings []storage.Listing) ListingResponse {
-	listingResponses := make([]ListingResponseBody, 0)
+func createListingResponse(listings []storage.Listing) responses.ListingResponse {
+	listingResponses := make([]responses.ListingResponseBody, 0)
 	for _, res := range listings {
 		listingResponses = append(listingResponses, createListingResponseBody(res))
 	}
-	return ListingResponse{
+	return responses.ListingResponse{
 		Data: listingResponses,
 	}
 }
 
-func createListingResponseBody(listing storage.Listing) ListingResponseBody {
-	return ListingResponseBody{
+func createListingResponseBody(listing storage.Listing) responses.ListingResponseBody {
+	return responses.ListingResponseBody{
 		ID:          listing.ID,
 		Type:        "listing",
 		Title:       listing.Title,
