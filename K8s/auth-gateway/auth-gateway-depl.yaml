@@ -9,7 +9,7 @@ spec:
       app: auth-gateway
   template:
     metadata:
-      labels: 
+      labels:
         app: auth-gateway
     spec:
       containers:
@@ -18,6 +18,10 @@ spec:
           env:
             - name: MONGO_URI
               value: mongodb://auth-gateway-mongo-srv:27017/auth
+            - name: LISTINGS_SERVICE
+              value: listings-srv
+            - name: LISTING_SERVICES_PORT
+              value: 3000
             #TODO: change to K8s secret
             #- name: JWT_SECRET
             #  value: test

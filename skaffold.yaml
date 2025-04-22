@@ -15,6 +15,14 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+    - image: philipjesic/listings
+      context: listings
+      docker:
+        dockerfile: Dockerfile
+      #sync:
+      #  manual:
+      #    - src: "src/**/*.ts"
+      #      dest: .
     - image: philipjesic/client
       context: client
       docker:

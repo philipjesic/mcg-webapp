@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listings-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: listings
+  template:
+    metadata:
+      labels:
+        app: listings
+    spec:
+      containers:
+        - name: listings
+          image: philipjesic/listings
+          env:
+            - name: MONGO_URI
+              value: mongodb://listings-mongo-srv:27017/listings
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: listings-srv
+spec:
+  selector:
+    app: listings
+  ports:
+    - name: listings
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
