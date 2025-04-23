@@ -2,13 +2,14 @@ import express, { Request, Response, NextFunction } from "express";
 import { authenticateUser } from "../middleware/authenticateUser";
 import axios from "axios";
 import { BadRequestError } from "../middleware/errors/bad-request-error";
+import { ServerError } from "../middleware/errors/server-error";
 
 const router = express.Router();
 
 router.use(authenticateUser);
 
 router.use(
-  "/api/listings/*",
+  "/api/listings*",
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const listingsAddr = process.env.LISTINGS_SERVICE || "";
@@ -33,7 +34,7 @@ router.use(
       res.status(response.status).send(response.data);
     } catch (err) {
       console.error("Error proxying to listings service:", err);
-      throw new BadRequestError("Internal Error...");
+      return next(new ServerError("Internal Error..."));
     }
   }
 );
