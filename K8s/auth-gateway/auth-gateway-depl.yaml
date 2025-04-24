@@ -21,7 +21,7 @@ spec:
             - name: LISTINGS_SERVICE
               value: listings-srv
             - name: LISTING_SERVICES_PORT
-              value: 3000
+              value: '3000'
             #TODO: change to K8s secret
             #- name: JWT_SECRET
             #  value: test
