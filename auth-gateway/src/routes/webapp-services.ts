@@ -14,7 +14,7 @@ router.use(
     console.log("got to handler");
     try {
       const listingsAddr = process.env.LISTINGS_SERVICE || "";
-      const listingsPort = process.env.LISTING_SERVICES_PORT || 3000;
+      const listingsPort = process.env.LISTING_SERVICE_PORT || 3000;
 
       const method = req.method.toLowerCase();
 
@@ -24,8 +24,6 @@ router.use(
       const data = req.body;
 
       const url = `http://${listingsAddr}:${listingsPort}${req.originalUrl}`;
-      console.log(url);
-      console.log(method);
 
       const response = await axios.request({
         method,
@@ -38,6 +36,38 @@ router.use(
       res.status(response.status).send(response.data);
     } catch (err) {
       console.error("Error proxying to listings service:", err);
+      return next(new ServerError("Internal Error..."));
+    }
+  }
+);
+
+router.use(
+  "/api/bids*",
+  async (req: Request, res: Response, next: NextFunction) => {
+    console.log("got to handler");
+    try {
+      const bidsAddr = process.env.BIDS_SERVICE || "";
+      const bidsPort = process.env.BIDS_SERVICE_PORT || 3000;
+
+      const method = req.method.toLowerCase();
+
+      // TODO: include headers for now. Will change
+      // in the future things like logging...
+      //const headers = { ...req.headers, host: "listings-srv" };
+      const data = req.body;
+
+      const url = `http://${bidsAddr}:${bidsPort}${req.originalUrl}`;
+
+      const response = await axios.request({
+        method,
+        url,
+        //headers,
+        data,
+      });
+
+      res.status(response.status).send(response.data);
+    } catch (err) {
+      console.error("Error proxying to bids service:", err);
       return next(new ServerError("Internal Error..."));
     }
   }

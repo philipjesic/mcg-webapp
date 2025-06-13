@@ -1,19 +1,22 @@
 import FeaturedAuction from "./components/FeaturedAuction";
 import AuctionCard from "./components/AuctionCard";
+import { Listing, ListingResponse } from "./responses/listings";
 
-export default function Home() {
-  const ongoingAuctions = [
-    { id: 1, title: "2020 BMW M2 Competition", imageUrl: "/bmw.jpg", bids: 14 },
-    { id: 2, title: "2017 Audi RS3", imageUrl: "/audi.jpg", bids: 20 },
-    {
-      id: 3,
-      title: "2021 Tesla Model 3 Performance",
-      imageUrl: "/tesla.jpg",
-      bids: 8,
-    },
-    // Add more...
-  ];
+async function getListings(): Promise<Listing[]> {
+  const listingsAddr = process.env.LISTINGS_SERVICE || "";
+  const listingsPort = process.env.LISTING_SERVICES_PORT || 3000;
+  const res = await fetch(
+    `http://${listingsAddr}:${listingsPort}/api/listings`
+  );
+  if (!res.ok) {
+    console.log("oh no error...");
+  }
+  const response: ListingResponse = await res.json()
+  return response.data
+}
 
+export default async function Home() {
+  const listings = await getListings();
   return (
     <div className="px-4 py-8 max-w-7xl mx-auto">
       <FeaturedAuction
@@ -27,8 +30,8 @@ export default function Home() {
       </h2>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {ongoingAuctions.map((auction) => (
-          <AuctionCard key={auction.id} {...auction} />
+        {listings.map((listing) => (
+          <AuctionCard key={listing.id} {...listing} />
         ))}
       </div>
     </div>

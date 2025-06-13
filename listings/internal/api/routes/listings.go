@@ -11,7 +11,8 @@ func RegisterListingHandlers(r *gin.RouterGroup, db storage.DataStore) *gin.Rout
 
 	api := r.Group("/listings")
 
-	api.GET("/:id", handler.Get)
+	api.GET("/", handler.Get)
+	api.GET("/:id", handler.GetByID)
 	api.POST("", handler.Create)
 
 	return api

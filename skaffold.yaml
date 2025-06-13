@@ -19,15 +19,15 @@ build:
       context: listings
       docker:
         dockerfile: Dockerfile
-      #sync:
-      #  manual:
-      #    - src: "src/**/*.ts"
-      #      dest: .
+    - image: philipjesic/bids
+      context: bids
+      docker:
+        dockerfile: Dockerfile
     - image: philipjesic/client
       context: client
       docker:
         dockerfile: Dockerfile
       sync:
         manual:
-          - src: '**/*.ts'
+          - src: "**/*.ts"
             dest: .

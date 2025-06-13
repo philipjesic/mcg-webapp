@@ -24,10 +24,36 @@ func CreateListingsHandler(db storage.DataStore) *Listings {
 
 func (h *Listings) Get(c *gin.Context) {
 	ctx := c.Request.Context()
+	listings, err := h.db.GetListings(ctx, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Errors: []responses.ErrorMessage{
+				{
+					Status: http.StatusInternalServerError,
+					Title: "internal server error",
+					Detail: "failed to fetch listing",
+				},
+			},
+		})
+	}
+	response := createListingResponse(listings)
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *Listings) GetByID(c *gin.Context) {
+	ctx := c.Request.Context()
 	id := c.Param("id")
 	listing, err := h.db.GetListingByID(ctx, id)
 	if err != nil {
-		c.String(http.StatusInternalServerError, "Internal Server Error...")
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Errors: []responses.ErrorMessage{
+				{
+					Status: http.StatusInternalServerError,
+					Title: "internal server error",
+					Detail: "failed to fetch listings",
+				},
+			},
+		})
 	}
 
 	response := createListingResponse([]storage.Listing{listing})
@@ -52,7 +78,15 @@ func (h *Listings) Create(c *gin.Context) {
 	err := h.db.InsertListing(ctx, listing)
 	if err != nil {
 		log.Println(err)
-		c.String(http.StatusInternalServerError, "Internal Server Error...")
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Errors: []responses.ErrorMessage{
+				{
+					Status: http.StatusInternalServerError,
+					Title: "internal server error",
+					Detail: "failed to create listing",
+				},
+			},
+		})
 		return
 	}
 

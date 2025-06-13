@@ -15,6 +15,11 @@ spec:
       containers:
         - name: client
           image: philipjesic/client
+          env:
+            - name: LISTINGS_SERVICE
+              value: listings-srv
+            - name: LISTINGS_SERVICES_PORT
+              value: "3000"
 ---
 apiVersion: v1
 kind: Service
@@ -27,4 +32,4 @@ spec:
     - name: client
       protocol: TCP
       port: 3000
-      targetPort: 3000  
+      targetPort: 3000

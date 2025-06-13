@@ -38,34 +38,31 @@ func InitMongoClient(ctx context.Context) *MongoClient {
 	}
 }
 
-func (m *MongoClient) GetListingByID(ctx context.Context, id string) (Listing, error) {
-	collection := m.Mongo.Database("listings").Collection("listings")
-	listing := Listing{}
-	err := collection.FindOne(ctx, bson.D{{Key: "id", Value: id}}).Decode(&listing)
-	return listing, err
+func (m *MongoClient) GetBidByID(ctx context.Context, id string) (Bid, error) {
+	collection := m.Mongo.Database("bids").Collection("bids")
+	bid := Bid{}
+	err := collection.FindOne(ctx, bson.D{{Key: "id", Value: id}}).Decode(&bid)
+	return bid, err
 }
 
-/*
-TODO: Make this function robust and performant as it will be used for the landing page.
-*/
-func (m *MongoClient) GetListings(ctx context.Context, ids []string) ([]Listing, error) {
-	collection := m.Mongo.Database("listings").Collection("listings")
-	listings := []Listing{}
-	sort := bson.D{{"date_ordered", 1}}
+func (m *MongoClient) GetBids(ctx context.Context, ids []string) ([]Bid, error) {
+	collection := m.Mongo.Database("bids").Collection("bids")
+	bids := []Bid{}
+	sort := bson.D{{Key: "date", Value: 1}}
 	opts := options.Find().SetSort(sort)
 	cursor, err := collection.Find(ctx, bson.D{}, opts)
 	if err != nil {
-		return listings, err
+		return bids, err
 	}
-	if err = cursor.All(ctx, &listings); err != nil {
-		return listings, err
+	if err = cursor.All(ctx, &bids); err != nil {
+		return bids, err
 	}
-	return listings, err
+	return bids, err
 }
 
-func (m *MongoClient) InsertListing(ctx context.Context, l Listing) error {
-	collection := m.Mongo.Database("listings").Collection("listings")
-	_, err := collection.InsertOne(ctx, l)
+func (m *MongoClient) InsertBid(ctx context.Context, b Bid) error {
+	collection := m.Mongo.Database("bids").Collection("bids")
+	_, err := collection.InsertOne(ctx, b)
 	if err != nil {
 		// TODO: add logging
 		return errors.New("database error: " + err.Error())

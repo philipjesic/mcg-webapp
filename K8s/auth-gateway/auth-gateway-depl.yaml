@@ -20,7 +20,11 @@ spec:
               value: mongodb://auth-gateway-mongo-srv:27017/auth
             - name: LISTINGS_SERVICE
               value: listings-srv
-            - name: LISTING_SERVICES_PORT
+            - name: LISTING_SERVICE_PORT
+              value: '3000'
+            - name: BIDS_SERVICE
+              value: bids-srv
+            - name: BIDS_SERVICE_PORT
               value: '3000'
             #TODO: change to K8s secret
             #- name: JWT_SECRET
