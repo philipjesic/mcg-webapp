@@ -41,7 +41,7 @@ export default function AuctionDetail({ listing }: ListingDetailProps) {
             Auction ends: {new Date(listing.endTime).toLocaleString()}
           </p>
         </div>
-        <BidButton />
+        <BidButton listingId={listing.id} />
       </div>
 
       {/* Specs */}
