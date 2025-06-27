@@ -8,19 +8,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/philipjesic/mcg-webapp/bids/internal/api/requests"
 	"github.com/philipjesic/mcg-webapp/bids/internal/api/responses"
-	"github.com/philipjesic/mcg-webapp/bids/internal/messaging"
 	"github.com/philipjesic/mcg-webapp/bids/internal/storage"
 )
 
 type Bids struct {
-	db        storage.DataStore
-	publisher messaging.BidPublisher
+	db storage.DataStore
 }
 
-func CreateBidsHandler(db storage.DataStore, publisher messaging.BidPublisher) *Bids {
+func CreateBidsHandler(db storage.DataStore) *Bids {
 	return &Bids{
-		db:        db,
-		publisher: publisher,
+		db: db,
 	}
 }
 
@@ -100,22 +97,6 @@ func (b *Bids) Create(c *gin.Context) {
 		return
 	}
 
-	msg := createBidMessage(bid)
-
-	if err := b.publisher.Publish(messaging.BID_TOPIC, messaging.CREATE_BID, msg); err != nil {
-		log.Printf("Publish error: %v", err)
-		// Optionally: rollback DB write, or mark for retry, or alert
-		log.Printf(err.Error())
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Errors: []responses.ErrorMessage{{
-				Status: http.StatusInternalServerError,
-				Title:  "internal server error",
-				Detail: "bid created but failed to publish event",
-			}},
-		})
-		return
-	}
-
 	res := createBidResponse([]storage.Bid{bid})
 	c.JSON(http.StatusCreated, res)
 }
@@ -138,17 +119,5 @@ func createBidResponseBody(bid storage.Bid) responses.BidResponseBody {
 		UserID:    bid.UserID,
 		Amount:    bid.Amount,
 		Timestamp: bid.Timestamp,
-	}
-}
-
-func createBidMessage(bid storage.Bid) messaging.BidMessage {
-	return messaging.BidMessage{
-		Bid: messaging.Bid{
-			AuctionID: bid.AuctionID,
-			ID:        bid.ID,
-			UserID:    bid.UserID,
-			Amount:    bid.Amount,
-			Timestamp: bid.Timestamp,
-		},
 	}
 }

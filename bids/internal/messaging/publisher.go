@@ -19,5 +19,6 @@ type Bid struct {
 }
 
 type BidMessage struct {
-	Bid Bid `json:"data"`
+	Data   Bid    `json:"data"`
+	Event string `json:"event"`
 }

@@ -12,6 +12,7 @@ services:
   
   mongo:
     image: mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
     container_name: mongo_db
     restart: always
     ports:

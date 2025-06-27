@@ -14,7 +14,6 @@ import (
 
 	"github.com/philipjesic/mcg-webapp/bids/internal/api/responses"
 	"github.com/philipjesic/mcg-webapp/bids/internal/api/routes"
-	"github.com/philipjesic/mcg-webapp/bids/internal/messaging"
 	"github.com/philipjesic/mcg-webapp/bids/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -25,8 +24,7 @@ func Test_GetBid_Success(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	mockPub := new(messaging.MockPublisher)
-	routes.RegisterAPI(r, mockDB, mockPub)
+	routes.RegisterAPI(r, mockDB)
 
 	bid := storage.Bid{
 		AuctionID: "test-auction-id",
@@ -52,8 +50,7 @@ func Test_GetBid_DBError(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	mockPub := new(messaging.MockPublisher)
-	routes.RegisterAPI(r, mockDB, mockPub)
+	routes.RegisterAPI(r, mockDB)
 
 	// Simulate DB error
 	mockDB.On("GetBidByID", mock.Anything, "fail-id").Return(storage.Bid{}, errors.New("db failed")).Once()
@@ -72,8 +69,7 @@ func Test_CreateListing_Success(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	mockPub := new(messaging.MockPublisher)
-	routes.RegisterAPI(r, mockDB, mockPub)
+	routes.RegisterAPI(r, mockDB)
 	timeStamp := time.Now().UTC()
 
 	requestBody := `{
@@ -90,11 +86,6 @@ func Test_CreateListing_Success(t *testing.T) {
 		insertedBid = b
 		return b.AuctionID == "test-auction" && b.UserID == "test-user" &&
 			b.Amount == 7000 && b.Timestamp == timeStamp
-	})).Return(nil).Once()
-
-	mockPub.On("Publish", messaging.BID_TOPIC, messaging.CREATE_BID, mock.MatchedBy(func(b messaging.BidMessage) bool {
-		return b.Bid.AuctionID == "test-auction" && b.Bid.UserID == "test-user" &&
-			b.Bid.Amount == 7000 && b.Bid.Timestamp == timeStamp
 	})).Return(nil).Once()
 
 	req, _ := http.NewRequest(http.MethodPost, "/api/bids", bytes.NewBufferString(requestBody))
@@ -128,8 +119,7 @@ func Test_CreateListing_DBError(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	mockPub := new(messaging.MockPublisher)
-	routes.RegisterAPI(r, mockDB, mockPub)
+	routes.RegisterAPI(r, mockDB)
 	timeStamp := time.Now().UTC()
 
 	requestBody := `{
@@ -145,8 +135,6 @@ func Test_CreateListing_DBError(t *testing.T) {
 		return b.AuctionID == "test-auction" && b.UserID == "test-user" &&
 			b.Amount == 7000 && b.Timestamp == timeStamp
 	})).Return(errors.New("simulated insert error")).Once()
-
-	mockPub.AssertNotCalled(t, "Publish", mock.Anything, mock.Anything, mock.Anything)
 
 	req, _ := http.NewRequest(http.MethodPost, "/api/bids", bytes.NewBufferString(requestBody))
 	req.Header.Set("Content-Type", "application/json")
@@ -165,8 +153,7 @@ func Test_CreateListing_ValidationError(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	mockPub := new(messaging.MockPublisher)
-	routes.RegisterAPI(r, mockDB, mockPub)
+	routes.RegisterAPI(r, mockDB)
 
 	body := []byte(`{
 		"data": {

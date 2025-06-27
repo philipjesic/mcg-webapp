@@ -61,11 +61,31 @@ func (m *MongoClient) GetBids(ctx context.Context, ids []string) ([]Bid, error) 
 }
 
 func (m *MongoClient) InsertBid(ctx context.Context, b Bid) error {
-	collection := m.Mongo.Database("bids").Collection("bids")
-	_, err := collection.InsertOne(ctx, b)
+	session, err := m.Mongo.StartSession()
 	if err != nil {
-		// TODO: add logging
-		return errors.New("database error: " + err.Error())
+		return err
 	}
-	return nil
+	defer session.EndSession(ctx)
+
+	_, err = session.WithTransaction(ctx, func(sc context.Context) (interface{}, error) {
+		// Insert bid
+		collection := m.Mongo.Database("bids").Collection("bids")
+		_, err := collection.InsertOne(sc, b)
+		if err != nil {
+			// TODO: add logging
+			return nil, errors.New("database error: " + err.Error())
+		}
+
+		// Create outbox message
+		outboxMsg := createBidOutboxMessage(b, "bid.create", BID_OUTBOX_STATUS_PENDING)
+		outBoxCollection := m.Mongo.Database("bids").Collection("outbox")
+		_, err = outBoxCollection.InsertOne(sc, outboxMsg)
+		if err != nil {
+			return nil, errors.New("database error: " + err.Error())
+		}
+		return nil, err
+	})
+
+	return err
+
 }
