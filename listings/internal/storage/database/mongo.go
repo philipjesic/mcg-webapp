@@ -1,10 +1,11 @@
-package storage
+package database
 
 import (
 	"context"
 	"errors"
 	"log"
 	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -71,4 +72,21 @@ func (m *MongoClient) InsertListing(ctx context.Context, l Listing) error {
 		return errors.New("database error: " + err.Error())
 	}
 	return nil
+}
+
+func (m *MongoClient) UpdateListingBid(ctx context.Context, auctionID, userID string, amount int, timestamp time.Time) error {
+	collection := m.Mongo.Database("listings").Collection("listings")
+	_, err := collection.UpdateOne(
+		ctx,
+		bson.M{"_id": auctionID},
+		bson.M{
+			"$max": bson.M{"highestBid": amount},
+			"$inc": bson.M{"bidCount": 1},
+			"$set": bson.M{
+				"lastBidUserId": userID,
+				"lastBidAt":     timestamp,
+			},
+		},
+	)
+	return err
 }

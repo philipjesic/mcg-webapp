@@ -1,7 +1,9 @@
-package storage
+package database
 
 import (
 	"context"
+	"time"
+
 	"github.com/stretchr/testify/mock"
 )
 
@@ -21,5 +23,10 @@ func (m *MockDataStore) GetListings(ctx context.Context, ids []string) ([]Listin
 
 func (m *MockDataStore) InsertListing(ctx context.Context, listing Listing) error {
 	args := m.Called(ctx, listing)
+	return args.Error(0)
+}
+
+func (m *MockDataStore) UpdateListingBid(ctx context.Context, auctionID, userID string, amount int, timestamp time.Time) error {
+	args := m.Called(ctx, auctionID, userID, amount, timestamp)
 	return args.Error(0)
 }

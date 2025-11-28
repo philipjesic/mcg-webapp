@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bids-mongo-init
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mongo-init
+          image: mongo:6
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for MongoDB to be ready..."
+              until mongosh --host bids-mongo-srv:27017 --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
+                echo "Mongo not ready yet..."
+                sleep 2
+              done
+
+              echo "Mongo is ready, checking replica set status..."
+              mongosh --host bids-mongo-srv:27017 --eval "
+                try {
+                  const status = rs.status();
+                if (status.ok) {
+                    print('Replica set already initialized.');
+                    quit();
+                  }
+                } catch (e) {
+                  print('Replica set needs initialization.');
+                }
+
+                print('Initializing replica set...');
+                rs.initiate({
+                  _id: 'rs0',
+                  members: [
+                    { _id: 0, host: 'bids-mongo-srv:27017' }
+                  ]
+                });
+              "

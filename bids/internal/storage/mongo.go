@@ -87,5 +87,4 @@ func (m *MongoClient) InsertBid(ctx context.Context, b Bid) error {
 	})
 
 	return err
-
 }

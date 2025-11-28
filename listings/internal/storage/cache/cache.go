@@ -1,7 +1,8 @@
-package storage
+package cache
+
+import ("context")
 
 type Cache interface {
-	Get()
-	Set()
+	UpdateBid(ctx context.Context, auctionID, userID string, amount int) error
 }
 
