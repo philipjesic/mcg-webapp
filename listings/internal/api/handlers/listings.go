@@ -30,7 +30,7 @@ func (h *Listings) Get(c *gin.Context) {
 			Errors: []responses.ErrorMessage{
 				{
 					Status: http.StatusInternalServerError,
-					Title: "internal server error",
+					Title:  "internal server error",
 					Detail: "failed to fetch listing",
 				},
 			},
@@ -49,7 +49,7 @@ func (h *Listings) GetByID(c *gin.Context) {
 			Errors: []responses.ErrorMessage{
 				{
 					Status: http.StatusInternalServerError,
-					Title: "internal server error",
+					Title:  "internal server error",
 					Detail: "failed to fetch listings",
 				},
 			},
@@ -65,15 +65,12 @@ func (h *Listings) Create(c *gin.Context) {
 	req := requests.ListingCreateRequest{}
 
 	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"errors": err.Error()})
 		return
 	}
 
-	listing := storage.Listing{
-		ID:          uuid.New().String(),
-		Title:       req.Data.Title,
-		Description: req.Data.Description,
-	}
+	listing := createStorageListing(req)
 
 	err := h.db.InsertListing(ctx, listing)
 	if err != nil {
@@ -82,7 +79,7 @@ func (h *Listings) Create(c *gin.Context) {
 			Errors: []responses.ErrorMessage{
 				{
 					Status: http.StatusInternalServerError,
-					Title: "internal server error",
+					Title:  "internal server error",
 					Detail: "failed to create listing",
 				},
 			},
@@ -106,9 +103,25 @@ func createListingResponse(listings []storage.Listing) responses.ListingResponse
 
 func createListingResponseBody(listing storage.Listing) responses.ListingResponseBody {
 	return responses.ListingResponseBody{
-		ID:          listing.ID,
-		Type:        "listing",
-		Title:       listing.Title,
-		Description: listing.Description,
+		ID:             listing.ID,
+		Type:           "listing",
+		Title:          listing.Title,
+		Description:    listing.Description,
+		Location:       listing.Location,
+		Endtime:        listing.Endtime,
+		Seller:         responses.SellerBody(listing.Seller),
+		Specifications: responses.Specifications(listing.Specifications),
+	}
+}
+
+func createStorageListing(req requests.ListingCreateRequest) storage.Listing {
+	return storage.Listing{
+		ID:             uuid.New().String(),
+		Title:          req.Data.Title,
+		Description:    req.Data.Description,
+		Location:       req.Data.Location,
+		Endtime:        req.Data.Endtime,
+		Seller:         storage.Seller(req.Data.Seller),
+		Specifications: storage.Specifications(req.Data.Specifications),
 	}
 }

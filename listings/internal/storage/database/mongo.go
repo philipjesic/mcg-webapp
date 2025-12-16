@@ -31,9 +31,6 @@ func InitMongoClient(ctx context.Context) *MongoClient {
 		log.Fatal("Ping call failed to MongoDB", err)
 	}
 
-	// TODO: fix up logging. Maybe create logging server?
-	log.Println("Connected to MongoDB")
-
 	return &MongoClient{
 		Mongo: client,
 	}

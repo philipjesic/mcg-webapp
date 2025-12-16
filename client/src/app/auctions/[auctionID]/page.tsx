@@ -2,36 +2,24 @@ import AuctionDetail from "../../components/AuctionDetail";
 
 interface Props {
   params: {
-    listingId: string;
+    auctionID: string;
   };
 }
 
 export default async function AuctionPage({ params }: Props) {
-  /*const res = await fetch(`${process.env.API_BASE_URL}/api/listings/${params.listingId}`, {
-    cache: "no-store", // always get latest
-  });
+  const { auctionID } = await params;
+  const listingsAddr = process.env.LISTINGS_SERVICE || "";
+  const listingsPort = process.env.LISTING_SERVICES_PORT || 3000;
+  console.log(
+    `http://${listingsAddr}:${listingsPort}/api/listings/${auctionID}`
+  );
+  const res = await fetch(
+    `http://${listingsAddr}:${listingsPort}/api/listings/${auctionID}`
+  );
 
-  const listing = await res.json();
-    */
+  console.log(res);
+  const listingsResponse = await res.json();
+  const listing = listingsResponse.data[0];
 
-  const listing = {
-    id: "rM2W8MAR",
-    title: "2016 Volvo V60 Polestar",
-    subtitle: "Only 42,000 miles · AWD · Clean title",
-    description: "This V60 Polestar is a rare performance wagon...",
-    imageUrl: "https://your-cdn.com/images/v60-front.jpg",
-    specs: {
-      Mileage: "42,000 miles",
-      Transmission: "Automatic",
-      Drivetrain: "AWD",
-      Color: "Rebel Blue",
-      Engine: "3.0L Turbo I6",
-    },
-    endTime: "2025-05-30T17:00:00.000Z",
-    seller: {
-      name: "John Doe",
-      location: "Vancouver, BC",
-    },
-  };
   return <AuctionDetail listing={listing} />;
 }

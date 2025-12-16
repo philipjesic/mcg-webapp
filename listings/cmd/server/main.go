@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 	"time"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/philipjesic/mcg-webapp/listings/internal/api/routes"
@@ -22,11 +23,13 @@ func main() {
 
 	// TODO: Fix context objects
 	db := storage.InitMongoClient(context.Background())
+	log.Println("Connected to MongoDB...")
 
 	redis, cacheErr := cache.NewRedisCache(config.GetEnv("REDIS_URI", ""))
 	if cacheErr != nil {
 		panic(cacheErr)
 	}
+	log.Println("Connected to Redis...")
 
 	flushInterval, _ := strconv.Atoi(config.GetEnv("BUFFER_FLUSH_INTERVAL", "5"))
 	bidBuffer := buffer.NewBuffer(db, time.Duration(flushInterval)*time.Second)
@@ -37,6 +40,7 @@ func main() {
 	if rabbitErr != nil {
 		panic(rabbitErr)
 	}
+	log.Println("Connected to RabbitMQ...")
 
 	rabbbitMQ.ListenForCreatedBids()
 	

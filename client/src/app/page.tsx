@@ -1,6 +1,6 @@
 import FeaturedAuction from "./components/FeaturedAuction";
 import AuctionCard from "./components/AuctionCard";
-import { Listing, ListingResponse } from "./responses/listings";
+import { Listing, ListingsResponse } from "./responses/listings";
 
 async function getListings(): Promise<Listing[]> {
   const listingsAddr = process.env.LISTINGS_SERVICE || "";
@@ -11,7 +11,7 @@ async function getListings(): Promise<Listing[]> {
   if (!res.ok) {
     console.log("oh no error...");
   }
-  const response: ListingResponse = await res.json()
+  const response: ListingsResponse = await res.json()
   return response.data
 }
 
