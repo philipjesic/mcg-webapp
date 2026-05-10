@@ -16,8 +16,10 @@ type MongoClient struct {
 }
 
 func InitMongoClient(ctx context.Context) *MongoClient {
+	uri := os.Getenv("MONGO_URI")
+	log.Printf("Attempting to connect to mongo with URI: %s", uri)
 	clientOptions := options.Client().
-		ApplyURI(os.Getenv("MONGO_URI")).
+		ApplyURI(uri).
 		SetMaxPoolSize(20) // TODO: Might have to increase connection pool size later
 
 	client, err := mongo.Connect(clientOptions)

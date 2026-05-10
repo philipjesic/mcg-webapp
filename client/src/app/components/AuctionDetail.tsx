@@ -48,10 +48,10 @@ export default function AuctionDetail({ listing }: ListingDetailProps) {
           </p>
         </div>
         <div>
-          <h2 className='text-3xl font-semibold'>Highest Bid: {listing.maxBid}</h2>
+          <h2 className='text-2xl font-semibold'>Highest Bid: {listing.maxBid}</h2>
         </div>
         <div>
-          <h2 className='text-3xl font-semibold'>Number of Bids: {listing.bidCount}</h2>
+          <h2 className='text-2xl font-semibold'>Number of Bids: {listing.bidCount}</h2>
         </div>
         <BidButton listingId={listing.id} />
       </div>

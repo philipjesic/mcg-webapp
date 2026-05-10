@@ -1,22 +1,38 @@
 services:
   bids:
     build: .
+    depends_on:
+      - mongo
+      #- mongo-init
+      - rabbitmq
     container_name: bids-service
     restart: always
     ports:
       - 3000:3000
     environment: 
       - PORT=3000
-      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_URI=mongodb://mongo:27017/?replicaSet=rs0
       - RABBITMQ_URI=amqp://guest:guest@rabbitmq:5672/
   
   mongo:
-    image: mongo
-    command: ["--replSet", "rs0"]
+    image: mongo:7
     container_name: mongo_db
     restart: always
     ports:
       - "27017:27017"
+    command:
+      - /bin/sh
+      - -c
+      - >
+        mongod --replSet rs0 --bind_ip_all & pid=$!;
+        echo 'Waiting for Mongo to be ready...';
+        while ! mongosh --host localhost:27017 --eval 'db.adminCommand({ ping: 1 })' >/dev/null 2>&1; do
+          sleep 1;
+        done;
+        echo 'Initiating replica set...';
+        mongosh --host localhost:27017 --eval 'rs.initiate({_id:"rs0", members:[{ _id:0, host:"mongo:27017" }]})';
+        echo 'Replica set initiation done.';
+        wait $pid;
 
   rabbitmq:
       image: rabbitmq:3-management

@@ -13,10 +13,10 @@ import (
 
 type OutboxService struct {
 	OutboxCollection *mongo.Collection
-	BidPublisher     messaging.BidPublisher
+	BidPublisher     messaging.BidMessenger
 }
 
-func New(mongoClient *storage.MongoClient, publisher messaging.BidPublisher) *OutboxService {
+func New(mongoClient *storage.MongoClient, publisher messaging.BidMessenger) *OutboxService {
 	collection := mongoClient.Mongo.Database("bids").Collection("outbox")
 	return &OutboxService{
 		OutboxCollection: collection,

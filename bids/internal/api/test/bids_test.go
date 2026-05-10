@@ -14,6 +14,7 @@ import (
 
 	"github.com/philipjesic/mcg-webapp/bids/internal/api/responses"
 	"github.com/philipjesic/mcg-webapp/bids/internal/api/routes"
+	"github.com/philipjesic/mcg-webapp/bids/internal/service"
 	"github.com/philipjesic/mcg-webapp/bids/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -24,7 +25,8 @@ func Test_GetBid_Success(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	routes.RegisterAPI(r, mockDB)
+	auctionService := service.NewAuctionServiceImpl()
+	routes.RegisterAPI(r, mockDB, auctionService)
 
 	bid := storage.Bid{
 		AuctionID: "test-auction-id",
@@ -50,7 +52,8 @@ func Test_GetBid_DBError(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	routes.RegisterAPI(r, mockDB)
+	auctionService := service.NewAuctionServiceImpl()
+	routes.RegisterAPI(r, mockDB, auctionService)
 
 	// Simulate DB error
 	mockDB.On("GetBidByID", mock.Anything, "fail-id").Return(storage.Bid{}, errors.New("db failed")).Once()
@@ -69,7 +72,8 @@ func Test_CreateListing_Success(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	routes.RegisterAPI(r, mockDB)
+	auctionService := service.NewAuctionServiceImpl()
+	routes.RegisterAPI(r, mockDB, auctionService)
 	timeStamp := time.Now().UTC()
 
 	requestBody := `{
@@ -119,7 +123,8 @@ func Test_CreateListing_DBError(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	routes.RegisterAPI(r, mockDB)
+	auctionService := service.NewAuctionServiceImpl()
+	routes.RegisterAPI(r, mockDB, auctionService)
 	timeStamp := time.Now().UTC()
 
 	requestBody := `{
@@ -153,7 +158,8 @@ func Test_CreateListing_ValidationError(t *testing.T) {
 	r := gin.Default()
 
 	mockDB := new(storage.MockDataStore)
-	routes.RegisterAPI(r, mockDB)
+	auctionService := service.NewAuctionServiceImpl()
+	routes.RegisterAPI(r, mockDB, auctionService)
 
 	body := []byte(`{
 		"data": {

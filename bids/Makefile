@@ -3,7 +3,7 @@
 
 # Run the whole service locally with all dependencies
 run local:
-	docker-compose up -d
+	docker-compose up --build
 
 # Stop the service and its dependencies
 stop:

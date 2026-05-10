@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 	"github.com/philipjesic/mcg-webapp/bids/internal/config"
 	"github.com/philipjesic/mcg-webapp/bids/internal/messaging"
 	"github.com/philipjesic/mcg-webapp/bids/internal/outbox"
+	"github.com/philipjesic/mcg-webapp/bids/internal/service"
 	"github.com/philipjesic/mcg-webapp/bids/internal/storage"
 )
 
@@ -22,8 +24,10 @@ func main() {
 	// start DB
 	db := storage.InitMongoClient(context.Background())
 
+	auctionService := service.NewAuctionServiceImpl()
+
 	// start rabbit
-	msg, err := messaging.NewRabbitMQ(config.GetEnv("RABBITMQ_URI", ""))
+	msg, err := messaging.NewRabbitMQ(config.GetEnv("RABBITMQ_URI", ""), auctionService)
 	if err != nil {
 		panic("could not start up bids service... \nmessaging service error: " + err.Error())
 	}
@@ -32,9 +36,13 @@ func main() {
 	outboxService := outbox.New(db, msg)
 	outboxService.Start(context.Background(), 5*time.Second) // every 5 seconds
 
-	routes.RegisterAPI(r, db)
+	routes.RegisterAPI(r, db, auctionService)
 
 	port := config.GetEnv("PORT", "3000")
+
+	log.Println("Listening for created bids...")
+	msg.ListenForCreatedBids()
+
 	r.Run(":" + port)
 
 }

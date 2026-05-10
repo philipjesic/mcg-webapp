@@ -12,3 +12,8 @@ type BidCreateRequestBody struct {
 type BidCreateRequest struct {
 	Data BidCreateRequestBody `json:"data" binding:"required"`
 }
+
+type SocketMessage struct {
+	Type string `json:"type"`
+	Data any `json:"data"`
+}

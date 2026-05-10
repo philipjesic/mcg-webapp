@@ -8,6 +8,13 @@ spec:
     - host: mcgwebapp.dev
       http:
         paths:
+          - path: /api/streams/
+            pathType: Prefix
+            backend:
+              service:
+                name: bids-srv
+                port:
+                  number: 3000
           - path: /api/
             pathType: Prefix
             backend:

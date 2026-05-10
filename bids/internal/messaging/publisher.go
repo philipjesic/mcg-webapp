@@ -6,8 +6,9 @@ const CREATE_BID = "bid.create"
 
 const BID_TOPIC = "bids"
 
-type BidPublisher interface {
+type BidMessenger interface {
 	Publish(topic, key string, bidMsg BidMessage) error
+	ListenForCreatedBids()
 }
 
 type Bid struct {
